@@ -21,6 +21,7 @@ export function effect(fn, options) {
     effect()
   }
   return effect
+}
 
 export function trigger(target, type, key, newValue, oldValue, oldTarget) {
   // 当前target的所有依赖
@@ -110,7 +111,7 @@ function createReactiveEffect(fn, options) {
         activeEffect = effectStack[effectStack.length - 1]
       }
     }
-  } as ReactiveEffect
+  }
   effect.id = uid++
   effect._isEffect = true
   effect.active = true
