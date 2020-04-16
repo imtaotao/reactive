@@ -1,7 +1,7 @@
-import { toRaw, reactive } from './reactive'
-import { hasOwn, isArray, isSymbol, isObject } from './utils'
-import { TrackOpTypes, TriggerOpTypes } from './operations'
-import { track } from './effect'
+import { track } from './effect.js'
+import { toRaw, reactive } from './reactive.js'
+import { hasOwn, isArray, isSymbol, isObject } from './utils.js'
+import { TrackOpTypes, TriggerOpTypes } from './operations.js'
 
 function createSetter(isReadonly = false, shallow = false) {
   return function set(

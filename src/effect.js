@@ -1,6 +1,13 @@
-import { TriggerOpTypes } from './operations'
-import { isArray } from './utils'
+import { isArray } from './utils.js'
+import { TriggerOpTypes } from './operations.js'
 
+export let activeEffect = null
+
+const effectStack = []
+const targetMap = new WeakMap()
+
+let shouldTrack = true
+const trackStack = []
 export function isEffect(fn) {
   return fn && fn._isEffect === true
 }
@@ -14,12 +21,6 @@ export function effect(fn, options) {
     effect()
   }
   return effect
-
-const effectStack = []
-const targetMap = new WeakMap()
-export let activeEffect
-let shouldTrack = true
-const trackStack = []
 
 export function trigger(target, type, key, newValue, oldValue, oldTarget) {
   // 当前target的所有依赖

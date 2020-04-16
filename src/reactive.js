@@ -1,5 +1,5 @@
-import { isObject, makeMap } from './utils'
-import { mutableHandlers } from './handlers'
+import { isObject, makeMap } from './utils.js'
+import { mutableHandlers } from './handlers.js'
 
 const rawToReactive = new WeakMap()
 const reactiveToRaw = new WeakMap()
