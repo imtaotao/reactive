@@ -9,14 +9,14 @@
 <script type="module">
   import { reactive, effect } from './src/index.js'
 
-  const value = reactive({ num: 1 })
+  const value = reactive({ num: { a: 1 } })
   effect(() => {
-    value.num
+    value.num.a
     console.log(value.num, 123)
   })
 
   window.v = value  
-  value.num = 2
+  
 </script>
 </body>
 </html>
