@@ -2,17 +2,33 @@ import { isArray } from './utils.js'
 import { TriggerOpTypes } from './operations.js'
 
 export let activeEffect = null
+export const EMPTY_OBJ = {}
 
 const effectStack = []
 const targetMap = new WeakMap()
 
 let shouldTrack = true
 const trackStack = []
+export function pauseTracking() {
+  trackStack.push(shouldTrack)
+  shouldTrack = false
+}
+
+export function enableTracking() {
+  trackStack.push(shouldTrack)
+  shouldTrack = true
+}
+
+export function resetTracking() {
+  const last = trackStack.pop()
+  shouldTrack = last === undefined ? true : last
+}
+
 export function isEffect(fn) {
   return fn && fn._isEffect === true
 }
 
-export function effect(fn, options) {
+export function effect(fn, options = EMPTY_OBJ) {
   if (isEffect(fn)) {
     fn = fn.raw
   }
@@ -26,6 +42,7 @@ export function effect(fn, options) {
 export function trigger(target, type, key, newValue, oldValue, oldTarget) {
   // 当前target的所有依赖
   const depsMap = targetMap.get(target)
+  console.log(depsMap)
   // 当前target还没有被追踪，不用更新
   if (depsMap === undefined) {
     // never been tracked
@@ -112,11 +129,20 @@ function createReactiveEffect(fn, options) {
       }
     }
   }
-  effect.id = uid++
   effect._isEffect = true
   effect.active = true
   effect.raw = fn
   effect.deps = []
   effect.options = options
   return effect
+}
+
+function cleanup(effect) {
+  const { deps } = effect
+  if (deps.length) {
+    for (let i = 0; i < deps.length; i++) {
+      deps[i].delete(effect)
+    }
+    deps.length = 0
+  }
 }

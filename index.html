@@ -11,9 +11,11 @@
 
   const value = reactive({ num: 1 })
   effect(() => {
-    console.log(123)
+    value.num
+    console.log(value.num, 123)
   })
 
+  window.v = value  
   value.num = 2
 </script>
 </body>

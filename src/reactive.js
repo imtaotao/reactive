@@ -1,5 +1,5 @@
-import { isObject, makeMap } from './utils.js'
 import { mutableHandlers } from './handlers.js'
+import { isObject, makeMap, toRawType } from './utils.js'
 
 const rawToReactive = new WeakMap()
 const reactiveToRaw = new WeakMap()
@@ -8,8 +8,6 @@ const nonReactiveValues = new WeakSet()
 
 const canObserve = value => {
   return (
-    !value._isVue &&
-    !value._isVNode &&
     isObservableType(toRawType(value)) &&
     !nonReactiveValues.has(value) &&
     !Object.isFrozen(value)

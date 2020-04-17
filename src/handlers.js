@@ -1,7 +1,7 @@
-import { track } from './effect.js'
+import { track, trigger } from './effect.js'
 import { toRaw, reactive } from './reactive.js'
-import { hasOwn, isArray, isSymbol, isObject } from './utils.js'
 import { TrackOpTypes, TriggerOpTypes } from './operations.js'
+import { hasOwn, isArray, isSymbol, isObject, hasChanged } from './utils.js'
 
 function createSetter(isReadonly = false, shallow = false) {
   return function set(
@@ -46,9 +46,9 @@ function createGetter(isReadonly = false, shallow = false) {
 
 const get = createGetter();
 const set = createSetter();
-const deleteProperty;
-const has;
-const ownKeys;
+// const deleteProperty;
+// const has;
+// const ownKeys;
 
 export const mutableHandlers = {
   get,
