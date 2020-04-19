@@ -6,24 +6,7 @@ export const EMPTY_OBJ = {}
 
 const effectStack = []
 const targetMap = new WeakMap()
-
-let shouldTrack = true
-const trackStack = []
-export function pauseTracking() {
-  trackStack.push(shouldTrack)
-  shouldTrack = false
-}
-
-export function enableTracking() {
-  trackStack.push(shouldTrack)
-  shouldTrack = true
-}
-
-export function resetTracking() {
-  const last = trackStack.pop()
-  shouldTrack = last === undefined ? true : last
-}
-
+window.t = targetMap
 export function isEffect(fn) {
   return fn && fn._isEffect === true
 }
@@ -32,10 +15,8 @@ export function effect(fn, options = EMPTY_OBJ) {
   if (isEffect(fn)) {
     fn = fn.raw
   }
-  const effect = createReactiveEffect(fn, options)
-  if (!options.lazy) {
-    effect()
-  }
+  const effect = createReactiveEffect(fn)
+  effect()
   return effect
 }
 
@@ -64,7 +45,7 @@ export function trigger(target, type, key, newValue, oldValue, oldTarget) {
     type === TriggerOpTypes.ADD ||
     (type === TriggerOpTypes.DELETE && !isArray(target))
 
-  if (isAddOrDelete || (type === TriggerOpTypes.SET && target instanceof Map)) {
+  if (isAddOrDelete) {
     add(depsMap.get(isArray(target) ? 'length' : ''))
   }
 
@@ -81,7 +62,7 @@ export function trigger(target, type, key, newValue, oldValue, oldTarget) {
 }
 
 export function track(target, type, key) {
-  if (!shouldTrack || activeEffect === undefined) {
+  if (activeEffect === undefined) {
     return
   }
   // 该对象的所有依赖
@@ -92,7 +73,7 @@ export function track(target, type, key) {
   }
   // 该对象具体某个key的依赖
   let dep = depsMap.get(key)
-  console.log(dep)
+
   // 如果该对象的某个key还没有依赖，则初始化空的
   if (dep === undefined) {
     depsMap.set(key, (dep = new Set()))
@@ -108,30 +89,23 @@ export function track(target, type, key) {
 }
 
 
-function createReactiveEffect(fn, options) {
-  const effect = function reactiveEffect(...args) {
-    if (!effect.active) {
-      return options.scheduler ? undefined : fn(...args)
-    }
+function createReactiveEffect(fn) {
+  const effect = function reactiveEffect() {
     if (!effectStack.includes(effect)) {
       cleanup(effect)
       try {
-        enableTracking()
         effectStack.push(effect)
         activeEffect = effect
-        return fn(...args)
+        return fn()
       } finally {
         effectStack.pop()
-        resetTracking()
         activeEffect = effectStack[effectStack.length - 1]
       }
     }
   }
   effect._isEffect = true
-  effect.active = true
   effect.raw = fn
   effect.deps = []
-  effect.options = options
   return effect
 }
 
