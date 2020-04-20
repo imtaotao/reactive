@@ -1,7 +1,7 @@
 import { track, trigger } from './effect.js'
 import { toRaw, reactive } from './reactive.js'
 import { TrackOpTypes, TriggerOpTypes } from './operations.js'
-import { hasOwn, isArray, isSymbol, isObject, hasChanged } from './utils.js'
+import { hasOwn, isArray, isObject, hasChanged } from './utils.js'
 
 const arrayInstrumentations = {}
 
@@ -36,7 +36,8 @@ function createSetter(isReadonly = false, shallow = false) {
 
     const hadKey = hasOwn(target, key)
     const result = Reflect.set(target, key, value, receiver)
-    // don't trigger if target is something up in the prototype chain of original
+
+    // 如果目标是原始原型链中的某个对象，请勿触发
     if (target === toRaw(receiver)) {
       if (!hadKey) {
         // 新增key

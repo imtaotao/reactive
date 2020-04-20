@@ -16,6 +16,31 @@
 
   window.v = value  
   // value.num = 2
+
+
+  function computed({ data, computed }, component) {
+    if (data && computed) {
+      data = reactive(data)
+      const computedData = {}
+
+      for (const key in computed) {
+        const fn = computed[key]
+        let isFrist = true
+        effect(() => {
+          if (isFrist) {
+            computedData[key] = fn(data)
+          } else {
+            component.setData({
+              ['data.computed.' + key]: fn(data),
+            })
+          }
+        })
+      }
+      component.setData({
+        computed: computedData,
+      })
+    }
+  }
 </script>
 </body>
 </html>
