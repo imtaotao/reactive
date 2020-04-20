@@ -3,6 +3,26 @@ import { toRaw, reactive } from './reactive.js'
 import { TrackOpTypes, TriggerOpTypes } from './operations.js'
 import { hasOwn, isArray, isSymbol, isObject, hasChanged } from './utils.js'
 
+const arrayInstrumentations = {}
+
+['includes', 'indexOf', 'lastIndexOf'].forEach(key => {
+  arrayInstrumentations[key] = function(...args) {
+    const arr = toRaw(this)
+    for (let i = 0, l = (this).length; i < l; i++) {
+      track(arr, TrackOpTypes.GET, i + '')
+    }
+    // we run the method using the original args first (which may be reactive)
+    const res = arr[key](...args)
+    if (res === -1 || res === false) {
+      // if that didn't work, run it again using raw values.
+      return arr[key](...args.map(toRaw))
+    } else {
+      return res
+    }
+  }
+})
+
+
 function createSetter(isReadonly = false, shallow = false) {
   return function set(
     target,
@@ -32,9 +52,9 @@ function createSetter(isReadonly = false, shallow = false) {
 
 function createGetter(isReadonly = false, shallow = false) {
   return function get(target, key, receiver) {
-    // if (isArray(target) && hasOwn(arrayInstrumentations, key)) {
-    //   return Reflect.get(arrayInstrumentations, key, receiver)
-    // }
+    if (isArray(target) && hasOwn(arrayInstrumentations, key)) {
+      return Reflect.get(arrayInstrumentations, key, receiver)
+    }
     const res = Reflect.get(target, key, receiver)
     // 添加订阅
     track(target, TrackOpTypes.GET, key)
@@ -44,16 +64,31 @@ function createGetter(isReadonly = false, shallow = false) {
   }
 }
 
+function deleteProperty(target, key) {
+  const hadKey = hasOwn(target, key)
+  const oldValue = target[key]
+  const result = Reflect.deleteProperty(target, key)
+  if (result && hadKey) {
+    trigger(target, TriggerOpTypes.DELETE, key, undefined, oldValue)
+  }
+  return result
+}
+
+function has(target, key) {
+  const result = Reflect.has(target, key)
+  track(target, TrackOpTypes.HAS, key)
+  return result
+}
+
 const get = createGetter();
 const set = createSetter();
-// const deleteProperty;
 // const has;
 // const ownKeys;
 
 export const mutableHandlers = {
   get,
   set,
-  // deleteProperty,
-  // has,
+  deleteProperty,
+  has
   // ownKeys,
 }
