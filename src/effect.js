@@ -29,9 +29,9 @@ export function trigger(target, type, key, newValue, oldValue, oldTarget) {
   }
 
   const effects = new Set()
-  const add = effectsToAdd => {
+  const add = (effectsToAdd) => {
     if (effectsToAdd !== undefined) {
-      effectsToAdd.forEach(effect => effects.add(effect))
+      effectsToAdd.forEach((effect) => effects.add(effect))
     }
   }
 
@@ -49,12 +49,13 @@ export function trigger(target, type, key, newValue, oldValue, oldTarget) {
     add(depsMap.get(isArray(target) ? 'length' : ''))
   }
 
-  const run = effect => {
-    if (effect.options.scheduler !== undefined) {
-      effect.options.scheduler(effect)
-    } else {
-      effect()
-    }
+  const run = (effect) => {
+    // if (effect.options.scheduler !== undefined) {
+    //   effect.options.scheduler(effect)
+    // } else {
+    //   effect()
+    // }
+    effect()
   }
 
   // 执行刚才收集的effects
@@ -87,7 +88,6 @@ export function track(target, type, key) {
     activeEffect.deps.push(dep)
   }
 }
-
 
 function createReactiveEffect(fn) {
   const effect = function reactiveEffect() {

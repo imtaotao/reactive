@@ -4,11 +4,11 @@ import { TrackOpTypes, TriggerOpTypes } from './operations.js'
 import { hasOwn, isArray, isObject, hasChanged } from './utils.js'
 
 const arrayInstrumentations = {}
-
-['includes', 'indexOf', 'lastIndexOf'].forEach(key => {
-  arrayInstrumentations[key] = function(...args) {
+const arrFn = ['includes', 'indexOf', 'lastIndexOf']
+arrFn.forEach((key) => {
+  arrayInstrumentations[key] = function (...args) {
     const arr = toRaw(this)
-    for (let i = 0, l = (this).length; i < l; i++) {
+    for (let i = 0, l = this.length; i < l; i++) {
       track(arr, TrackOpTypes.GET, i + '')
     }
     // we run the method using the original args first (which may be reactive)
@@ -22,16 +22,11 @@ const arrayInstrumentations = {}
   }
 })
 
-
 function createSetter(isReadonly = false, shallow = false) {
-  return function set(
-    target,
-    key,
-    value,
-    receiver
-  ) {
+  return function set(target, key, value, receiver) {
+    console.log(key, value);
     const oldValue = target[key]
-    
+
     value = toRaw(value)
 
     const hadKey = hasOwn(target, key)
@@ -81,8 +76,8 @@ function has(target, key) {
   return result
 }
 
-const get = createGetter();
-const set = createSetter();
+const get = createGetter()
+const set = createSetter()
 // const has;
 // const ownKeys;
 
@@ -90,6 +85,6 @@ export const mutableHandlers = {
   get,
   set,
   deleteProperty,
-  has
+  has,
   // ownKeys,
 }

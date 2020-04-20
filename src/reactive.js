@@ -25,12 +25,9 @@ export function reactive(target) {
 
 function createReactiveObject(target, toProxy, toRaw, baseHandlers) {
     if (!isObject(target)) return target
-    // target already has corresponding Proxy
     let observed = toProxy.get(target)
     if (observed !== undefined) return observed
-    // target is already a Proxy
     if (toRaw.has(target)) return target
-    // only a whitelist of value types can be observed.
     if (!canObserve(target)) {
       return target
     }
